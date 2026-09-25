@@ -28,8 +28,10 @@
 ## 安装
 
 ```bash
-hermes plugins install Realtyxxx/hermes-plugin-antigravity-agy
+hermes plugins install Realtyxxx/hermes-plugin-antigravity-agy --no-enable
 ```
+
+**让 AI 帮你安装？** 把 [docs/install.md](docs/install.md#中文-prompt) 里现成的 prompt 交给它：包含前提检查、安装、校验、冒烟测试、可选的工具执行审计和排错，并带有安全约束（不碰凭证、未经允许不改配置、不重启 gateway）。
 
 或直接克隆到 Hermes home：
 

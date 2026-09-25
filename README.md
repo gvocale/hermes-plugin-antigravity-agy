@@ -31,8 +31,10 @@ A [Hermes Agent](https://github.com/NousResearch/hermes-agent) model-provider pl
 ## Install
 
 ```bash
-hermes plugins install Realtyxxx/hermes-plugin-antigravity-agy
+hermes plugins install Realtyxxx/hermes-plugin-antigravity-agy --no-enable
 ```
+
+**Installing with an AI agent?** Hand it a ready-made prompt from [docs/install.md](docs/install.md): prerequisites, install, validation, a smoke test, an optional tool-execution audit and troubleshooting, with guardrails (no credential access, no config change or gateway restart without asking).
 
 Or clone it into your Hermes home:
 

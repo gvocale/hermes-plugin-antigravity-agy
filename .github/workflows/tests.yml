@@ -27,7 +27,8 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install hermes-agent
-        run: python -m pip install -e ./hermes-agent pytest
+        # ruamel.yaml: imported by hermes-agent core but missing from its package requirements
+        run: python -m pip install -e ./hermes-agent pytest ruamel.yaml
       - name: Validate the plugin the way the Hermes catalog CI does
         run: hermes plugins validate ./plugin
       - name: Run the plugin suite (fake agy only; no Antigravity quota is used)
