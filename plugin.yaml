@@ -1,0 +1,22 @@
+name: antigravity-agy
+kind: model-provider
+version: 0.1.0
+manifest_version: 2
+description: Antigravity (agy) — run Hermes on your Google Antigravity subscription through the official agy CLI; agy is only the model, Hermes executes every tool
+author: Realtyxxx
+license: MIT
+homepage: https://github.com/Realtyxxx/hermes-plugin-antigravity-agy
+tags: [model-provider, google, antigravity, gemini, subscription, experimental]
+requires_hermes: ">=0.21.4"
+platforms: [linux, macos]
+optional_env:
+  - ANTIGRAVITY_AGY_COMMAND
+  - ANTIGRAVITY_AGY_PREWARM
+  - ANTIGRAVITY_AGY_PREWARM_TTL
+  - ANTIGRAVITY_AGY_CLEANUP
+  - ANTIGRAVITY_AGY_DATA_DIR
+  - ANTIGRAVITY_AGY_TRACE_DIR
+external_dependencies:
+  - name: agy
+    check: "agy --version"
+    install: "Install the Antigravity CLI (https://antigravity.google/docs/cli/install) and sign in by running `agy` once"
