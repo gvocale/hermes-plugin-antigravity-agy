@@ -5,6 +5,10 @@
 
 English | [简体中文](README.zh-CN.md)
 
+> [!WARNING]
+> **Unmaintained — use [`antigravity-subscription-directsdk`](https://github.com/soyelmismo/hermes-antigravity-subscription) instead.**
+> This plugin flattens the whole conversation into one agy user message, and `agy` silently truncates a single user message beyond roughly 65–69k tokens (keeping the beginning). Long sessions therefore lose their newest turns and the model can loop. `antigravity-subscription-directsdk` keeps a persistent agy worker and sends only new messages, which avoids this. This repository is archived and read-only.
+
 A [Hermes Agent](https://github.com/NousResearch/hermes-agent) model-provider plugin that runs Hermes on your **Google Antigravity subscription** by driving the official, already signed-in [`agy` CLI](https://antigravity.google/docs/cli/install).
 
 **agy is only the model; Hermes executes every tool.** agy runs as a custom agent with all of its built-in tools switched off, Hermes' tools are exposed through an inventory-only MCP server, and each tool call is intercepted and handed back to Hermes, which runs it with its own approvals and sandbox.

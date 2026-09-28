@@ -2,6 +2,10 @@
 
 [English](README.md) | 简体中文
 
+> [!WARNING]
+> **已停止维护，请改用 [`antigravity-subscription-directsdk`](https://github.com/soyelmismo/hermes-antigravity-subscription)。**
+> 本插件把整段对话拍平成一条 agy 用户消息，而 `agy` 会静默截断超过约 65–69k tokens 的单条用户消息（保留开头）。因此长会话会丢失最新的几轮，模型可能反复打转。`antigravity-subscription-directsdk` 使用常驻 agy 进程、只发送新增消息，没有这个问题。本仓库已归档，只读。
+
 这是一个 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 的 model-provider 插件。它驱动本机已登录的官方 [`agy` CLI](https://antigravity.google/docs/cli/install)，让 Hermes 使用你的 **Google Antigravity 订阅额度**。
 
 **agy 只当模型，所有工具都由 Hermes 执行。** agy 以关闭全部内置工具的自定义 agent 运行；Hermes 的工具通过一个只声明、不执行的 MCP 服务器暴露给模型；每次工具调用都会被截获并交回 Hermes，由 Hermes 按自己的审批和沙箱执行。
