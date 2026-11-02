@@ -138,7 +138,24 @@ def test_tool_call_streamed_with_preceding_text(fake_agy):
     assert_dead(record)
 
 
-@pytest.mark.parametrize('scenario', ['native_tool', 'foreign_mcp', 'unknown_hermes_tool'])
+@pytest.mark.parametrize('scenario,expected_name,expected_args', [
+    ('tool_nested_envelope', 'terminal', {'command': 'ls -la'}),
+    ('tool_recursive_dispatch', 'read_file', {'path': 'notes.txt'}),
+    ('tool_split_envelope', 'terminal', {'command': 'ls -la'}),
+])
+def test_nested_mcp_tool_call_envelopes_are_unwrapped(fake_agy, scenario, expected_name, expected_args):
+    c, record = client(fake_agy, scenario)
+    response = c.chat.completions.create(model='gemini-3.8-flash-medium', messages=USER, tools=TOOLS)
+    choice = response.choices[0]
+    assert choice.finish_reason == 'tool_calls'
+    (call,) = choice.message.tool_calls
+    assert call.function.name == expected_name
+    assert json.loads(call.function.arguments) == expected_args
+    assert_dead(record)
+    assert not (record / 'after_tool').exists()
+
+
+@pytest.mark.parametrize('scenario', ['native_tool', 'foreign_mcp', 'unknown_hermes_tool', 'tool_nested_missing_required'])
 def test_non_hermes_tool_kills_run(fake_agy, scenario):
     c, record = client(fake_agy, scenario)
     started = time.monotonic()

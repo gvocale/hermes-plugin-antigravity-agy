@@ -162,6 +162,34 @@ def main():
         tool_step(2, 'call_mcp_tool', {'Arguments': '{"path": "notes.txt"}', 'ServerName': 'hermes', 'ToolName': 'read_file'})
         hang(record, 'after_tool')
         return 0
+    if scenario == 'tool_nested_envelope':
+        step(1, 'agent_response', 'DONE', usage=usage(1500, 40))
+        tool_step(2, 'call_mcp_tool', {
+            'Arguments': {'Arguments': {'command': 'ls -la'}, 'ServerName': 'hermes', 'ToolName': 'terminal'},
+            'taskId': 'call_08d32d326f21'})
+        hang(record, 'after_tool')
+        return 0
+    if scenario == 'tool_recursive_dispatch':
+        step(1, 'agent_response', 'DONE', usage=usage(1500, 40))
+        tool_step(2, 'call_mcp_tool', {
+            'Arguments': {'Arguments': {'path': 'notes.txt'}, 'ServerName': 'hermes', 'ToolName': 'read_file'},
+            'ServerName': 'hermes', 'ToolName': 'call_mcp_tool'})
+        hang(record, 'after_tool')
+        return 0
+    if scenario == 'tool_split_envelope':
+        step(1, 'agent_response', 'DONE', usage=usage(1500, 40))
+        tool_step(2, 'call_mcp_tool', {
+            'Arguments': {'ServerName': 'hermes', 'ToolName': 'terminal'},
+            'command': 'ls -la'})
+        hang(record, 'after_tool')
+        return 0
+    if scenario == 'tool_nested_missing_required':
+        step(1, 'agent_response', 'DONE', usage=usage(1500, 40))
+        tool_step(2, 'call_mcp_tool', {
+            'Arguments': {'ServerName': 'hermes', 'ToolName': 'terminal'},
+            'ToolName': 'call_mcp_tool'})
+        hang(record, 'after_unknown')
+        return 0
     if scenario == 'native_tool':
         step(1, 'agent_response', 'DONE', usage=usage(24000, 30))
         tool_step(2, 'run_command', {'CommandLine': 'rm -rf /tmp/should-never-run'})
