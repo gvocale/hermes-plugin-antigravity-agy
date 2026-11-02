@@ -122,6 +122,9 @@ def render_content(content):
     return '\n'.join(p for p in parts if p)
 
 
+ENVELOPE_KEYS = frozenset(('Arguments', 'ServerName', 'ToolName', 'id', 'taskId', 'type', 'serverId'))
+
+
 def _arguments(value):
     if isinstance(value, str):
         try:
@@ -129,6 +132,37 @@ def _arguments(value):
         except ValueError:
             return value
     return value if value is not None else {}
+
+
+def _resolve_mcp_call(params, schemas):
+    """Return ``(server, target, arguments)`` for a ``call_mcp_tool`` step, unwrapping nested envelopes."""
+    if not isinstance(params, dict):
+        return None, None, {}
+    server, target = params.get('ServerName'), params.get('ToolName')
+    raw_args = params.get('Arguments')
+    if server == SERVER and target in schemas:
+        return server, target, _arguments(raw_args)
+    inner = _arguments(raw_args)
+    for _ in range(3):
+        if not (isinstance(inner, dict) and server in (None, SERVER) and target in (None, DISPATCH_TOOL)):
+            break
+        inner_server, inner_target = inner.get('ServerName'), inner.get('ToolName')
+        if inner_server not in (None, SERVER) or not isinstance(inner_target, str):
+            break
+        eff_server = inner_server or server or (SERVER if params.get('serverId') == SERVER else None)
+        if 'Arguments' in inner:
+            server, target, raw_args = eff_server, inner_target, inner.get('Arguments')
+            if server == SERVER and target in schemas:
+                return server, target, _arguments(raw_args)
+            inner = _arguments(raw_args)
+            continue
+        if eff_server == SERVER and inner_target in schemas:
+            extra = {k: v for k, v in {**params, **inner}.items() if k not in ENVELOPE_KEYS}
+            required = (schemas[inner_target] or {}).get('required') or ()
+            if all(req in extra for req in required) and (extra or not required):
+                return eff_server, inner_target, extra
+        break
+    return server, target, _arguments(raw_args)
 
 
 def prepare_conversation(messages):
@@ -883,6 +917,7 @@ class Client:
                     deadline = time.monotonic() + timeout
                     return event
 
+            schemas = {t['name']: t.get('inputSchema') or {} for t in manifest}
             text, calls, usage_steps, final = '', [], [], None
             while True:
                 event = receive()
@@ -909,11 +944,10 @@ class Client:
                         info = step.get('tool_info') or {}
                         name = step.get('tool_name') or info.get('name')
                         params = info.get('parameters') or {}
-                        target = params.get('ToolName')
-                        if name == DISPATCH_TOOL and params.get('ServerName') == SERVER and target in names:
+                        server, target, arguments = _resolve_mcp_call(params, schemas) if name == DISPATCH_TOOL else (None, None, {})
+                        if name == DISPATCH_TOOL and server == SERVER and target in names:
                             # agy dispatches calls one at a time and our MCP server never answers, so
                             # the first captured call ends the run; Hermes executes it and asks again.
-                            arguments = _arguments(params.get('Arguments'))
                             calls.append({'id': 'call_' + uuid.uuid4().hex[:24], 'type': 'function',
                                           'function': {'name': target, 'arguments': json.dumps(
                                               arguments if isinstance(arguments, dict) else {'input': arguments},
@@ -922,7 +956,7 @@ class Client:
                             break
                         else:
                             proc.kill()
-                            shown = f'{name} -> {params.get("ServerName")}/{target}' if name == DISPATCH_TOOL else name
+                            shown = f'{name} -> {server}/{target}' if name == DISPATCH_TOOL else name
                             raise AgyNativeToolViolation(
                                 f'agy attempted a tool outside the Hermes inventory ({shown!r}); the run was killed '
                                 'so only Hermes executes tools')
